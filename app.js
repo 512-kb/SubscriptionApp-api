@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const bodyParser = require("body-parser");
+//const bodyParser = require("body-parser");
 const routes = require("./routes");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -30,6 +30,6 @@ app.use(
 );
 app.use(express.static("public"));
 app.use(routes);
-app.use(bodyParser.json());
+//app.use(bodyParser.json());
 
 app.listen(port, () => console.log("Server listening on port " + port));

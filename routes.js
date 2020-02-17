@@ -1,9 +1,9 @@
 const router = require("express").Router();
-const bodyParser = require("body-parser");
+//const bodyParser = require("body-parser");
 var stripe = require("stripe")("sk_test_PO8otmAwilkg5Z8EBXfbt5Ck00uFfGl6ln");
 const User = require("./schema").User;
 
-router.use(bodyParser.json());
+//router.use(bodyParser.json());
 
 planName = planID => {
   if (planID === "plan_GimROblRVgZszu") return "Plan 1";
