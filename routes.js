@@ -263,7 +263,7 @@ router.post("/webhooks", async (req, res) => {
       }
     );
   } catch (err) {
-    res.send(req);
+    res.send(err);
   }
 });
 
