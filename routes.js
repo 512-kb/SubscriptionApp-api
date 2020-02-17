@@ -1,5 +1,5 @@
 const router = require("express").Router();
-//const bodyParser = require("body-parser");
+const bodyParser = require("body-parser");
 var stripe = require("stripe")("sk_test_PO8otmAwilkg5Z8EBXfbt5Ck00uFfGl6ln");
 const User = require("./schema").User;
 
@@ -252,6 +252,7 @@ router.post(
   "/webhooks",
   bodyParser.raw({ type: "application/json" }),
   async (req, res) => {
+    console.log(req);
     try {
       event = JSON.parse(req.body);
       res.send(event);
