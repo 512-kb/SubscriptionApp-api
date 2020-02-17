@@ -249,23 +249,23 @@ router.get("/user/getInfo", async (req, res) => {
 });
 
 router.post("/webhooks", async (req, res) => {
-  console.log(req.body);
-  const signature = req.headers["stripe-signature"];
-  try {
-    event = await stripe.webhooks.constructEvent(
-      req.body,
-      signature,
-      "whsec_gkgjKQSNDfinQs7QdgFvrKDtgGNWbtBz",
-      (err, event) => {
-        if (err) {
-          //console.log("colbek", err);
-          res.send(err);
-        } else res.send(event);
-      }
-    );
-  } catch (err) {
-    res.send(`Webhook Error: ${err.message}`);
-  }
+  res.send(req);
+  // const signature = req.headers["stripe-signature"];
+  // try {
+  //   event = await stripe.webhooks.constructEvent(
+  //     req.body,
+  //     signature,
+  //     "whsec_gkgjKQSNDfinQs7QdgFvrKDtgGNWbtBz",
+  //     (err, event) => {
+  //       if (err) {
+  //         //console.log("colbek", err);
+  //         res.send(err);
+  //       } else res.send(event);
+  //     }
+  //   );
+  // } catch (err) {
+  //   res.send(`Webhook Error: ${err.message}`);
+  // }
 });
 
 module.exports = router;
