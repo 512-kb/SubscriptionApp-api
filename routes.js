@@ -249,7 +249,6 @@ router.get("/user/getInfo", async (req, res) => {
 });
 
 router.post("/webhooks", async (req, res) => {
-  res.send(req);
   const signature = req.headers["stripe-signature"];
   try {
     event = await stripe.webhooks.constructEvent(
@@ -264,7 +263,7 @@ router.post("/webhooks", async (req, res) => {
       }
     );
   } catch (err) {
-    res.send(`Webhook Error: ${err.message}`);
+    res.send(req);
   }
 });
 
