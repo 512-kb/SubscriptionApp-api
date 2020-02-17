@@ -248,23 +248,17 @@ router.get("/user/getInfo", async (req, res) => {
   else res.send(user[0]);
 });
 
-router.post("/webhooks", async (req, res) => {
-  const signature = req.headers["stripe-signature"];
-  try {
-    event = await stripe.webhooks.constructEvent(
-      req,
-      signature,
-      "whsec_gkgjKQSNDfinQs7QdgFvrKDtgGNWbtBz",
-      (err, event) => {
-        if (err) {
-          //console.log("colbek", err);
-          res.send(err);
-        } else res.send(event);
-      }
-    );
-  } catch (err) {
-    res.send("Webhook err: " + err.message);
+router.post(
+  "/webhooks",
+  bodyParser.raw({ type: "application/json" }),
+  async (req, res) => {
+    try {
+      event = JSON.parse(req.body);
+      res.send(event);
+    } catch (err) {
+      res.send("Webhook err: " + err.message);
+    }
   }
-});
+);
 
 module.exports = router;
