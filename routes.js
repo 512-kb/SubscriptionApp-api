@@ -252,7 +252,7 @@ router.post("/webhooks", async (req, res) => {
   const signature = req.headers["stripe-signature"];
   try {
     event = await stripe.webhooks.constructEvent(
-      req.body,
+      JSON.stringify(req.body),
       signature,
       "whsec_gkgjKQSNDfinQs7QdgFvrKDtgGNWbtBz",
       (err, event) => {
