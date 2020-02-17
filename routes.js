@@ -258,8 +258,8 @@ router.post("/webhooks", async (req, res) => {
       "whsec_gkgjKQSNDfinQs7QdgFvrKDtgGNWbtBz",
       (err, event) => {
         if (err) {
-          console.log("colbek", err);
-          res.send("error");
+          //console.log("colbek", err);
+          res.send(err);
         } else res.send(event);
       }
     );
