@@ -253,7 +253,7 @@ router.post(
   async (req, res) => {
     console.log(req);
     try {
-      event = JSON.parse(req.body);
+      event = req.body;
       res.send(event);
     } catch (err) {
       res.send("Webhook err: " + err.message);
