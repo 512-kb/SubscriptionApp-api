@@ -43,7 +43,8 @@ router.get("/login", async (req, res) => {
       if (err) res.send("NOT FOUND");
     }
   );
-  res.send(user[0]);
+  if (user.length <= 0) res.send("NOT FOUND");
+  else res.send(user[0]);
 });
 
 router.get("/user/subscriptions", async (req, res) => {
