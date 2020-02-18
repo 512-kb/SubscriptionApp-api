@@ -270,7 +270,7 @@ router.post(
                 res.send({ message: "Failed", credits: credits });
               } else
                 res.send({
-                  message: "Successfuly Consumed",
+                  message: "Credits Renewed",
                   credits: credits
                 });
             }
