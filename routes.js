@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 var stripe = require("stripe")("sk_test_PO8otmAwilkg5Z8EBXfbt5Ck00uFfGl6ln");
 const User = require("./schema").User;
 
-//router.use(bodyParser.json());
+router.use(bodyParser.json());
 
 planName = planID => {
   if (planID === "plan_GimROblRVgZszu") return "Plan 1";
@@ -40,7 +40,7 @@ router.get("/login", async (req, res) => {
       password: req.query.password
     },
     err => {
-      if (err) console.warn(err);
+      if (err) res.send("NOT FOUND");
     }
   );
   res.send(user);
@@ -134,9 +134,9 @@ router.post("/user/subscribe", async (req, res) => {
 });
 
 router.post("/user/PlanChange", async (req, res) => {
-  let credits = await User.find({ _id: req.body._id }, err =>
-    console.log(1, err)
-  );
+  let credits = await User.find({ _id: req.body._id }, err => {
+    if (err) console.log(1, err);
+  });
   if (credits.length <= 0) {
     res.send("no");
     return;
@@ -241,11 +241,10 @@ router.get("/user/getInfo", async (req, res) => {
       _id: req.query._id
     },
     err => {
-      if (err) res.send([]);
+      if (err) res.send("NOT FOUND");
     }
   );
-  if (user.length <= 0) res.send([]);
-  else res.send(user[0]);
+  res.send(user[0]);
 });
 
 router.post(
