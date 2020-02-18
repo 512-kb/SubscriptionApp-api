@@ -149,7 +149,7 @@ router.post("/user/PlanChange", async (req, res) => {
   let obj = {
     existingPlan: req.body.existingPlan,
     plan: "",
-    credits: credits + planCredits(newPlanId)
+    credits: planCredits(newPlanId)
   };
 
   if (planId !== newPlanId) {
@@ -179,8 +179,7 @@ router.post("/user/PlanChange", async (req, res) => {
               id: resp.items.data[0].plan.id,
               name: resp.items.data[0].plan.nickname
             },
-            credits:
-              credits + resp.items.data[0].plan.transform_usage.divide_by,
+            credits: resp.items.data[0].plan.transform_usage.divide_by,
             plan: ""
           };
       }
@@ -188,7 +187,7 @@ router.post("/user/PlanChange", async (req, res) => {
   }
   await User.updateOne(
     { _id: req.body._id },
-    { credits: credits + planCredits(newPlanId) },
+    { credits: planCredits(newPlanId) },
     err => {
       if (err) {
         console.log(3, err);
