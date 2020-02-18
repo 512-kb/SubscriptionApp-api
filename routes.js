@@ -93,8 +93,8 @@ router.post("/user/subscribe", async (req, res) => {
                 {
                   $set: {
                     id: customer.id,
-                    pmid: paymentMethod.id,
-                    credits: planCredits(req.body.plan)
+                    pmid: paymentMethod.id
+                    //credits: planCredits(req.body.plan)
                   }
                 },
                 async err => {
@@ -253,8 +253,29 @@ router.post(
   async (req, res) => {
     console.log(req);
     try {
-      event = req.body;
-      res.send(event);
+      let action = req.body;
+      switch (action.type) {
+        case "invoice.payment_succeeded":
+          const customer = await stripe.customers.retrieve(
+            action.data.object.customer
+          );
+          const activePlan = customer.subscriptions.data[0].items.data[0].plan;
+          const credits = activePlan.nickname === "Plan 1" ? 10 : 20;
+          await User.updateOne(
+            { id: action.data.object.customer },
+            { credits: credits },
+            err => {
+              if (err) {
+                console.warn(err);
+                res.send({ message: "Failed", credits: credits });
+              } else
+                res.send({
+                  message: "Successfuly Consumed",
+                  credits: credits
+                });
+            }
+          );
+      }
     } catch (err) {
       res.send("Webhook err: " + err.message);
     }
