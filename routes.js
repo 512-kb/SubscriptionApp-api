@@ -111,9 +111,12 @@ router.post("/user/subscribe", async (req, res) => {
                         else if (
                           subscription.latest_invoice.payment_intent.status !==
                           "succeeded"
-                        )
-                          res.send({ err: "Card not Accepted" });
-                        else {
+                        ) {
+                          await stripe.customers.del(customer.id, err => {
+                            if (err) res.send({ err: err.raw.message });
+                            else res.send({ err: "Card not Accepted" });
+                          });
+                        } else {
                           res.send({
                             pmid: paymentMethod.id,
                             id: customer.id,
