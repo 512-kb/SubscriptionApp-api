@@ -112,9 +112,29 @@ router.post("/user/subscribe", async (req, res) => {
                           subscription.latest_invoice.payment_intent.status !==
                           "succeeded"
                         ) {
-                          await stripe.customers.del(customer.id, err => {
+                          await stripe.customers.del(customer.id, async err => {
                             if (err) res.send({ err: err.raw.message });
-                            else res.send({ err: "Card not Accepted" });
+                            else {
+                              await User.updateOne(
+                                {
+                                  _id: req.body._id
+                                },
+                                {
+                                  $set: {
+                                    id: "",
+                                    pmid: "",
+                                    credits: 0
+                                  }
+                                },
+                                err => {
+                                  if (err)
+                                    res.send({
+                                      err: "Couldn't update Database"
+                                    });
+                                  else res.send({ err: "Card not Accepted" });
+                                }
+                              );
+                            }
                           });
                         } else {
                           res.send({
