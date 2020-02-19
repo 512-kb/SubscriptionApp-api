@@ -74,80 +74,59 @@ router.post("/user/subscribe", async (req, res) => {
     async (err, paymentMethod) => {
       if (err) res.send({ err: err.raw.message });
       else {
-        await stripe.paymentIntents.create(
+        await stripe.customers.create(
           {
-            amount: "50",
-            currency: "inr",
-            payment_method_types: ["card"]
+            payment_method: paymentMethod.id,
+            email: req.body.email,
+            name: req.body.name,
+            invoice_settings: {
+              default_payment_method: paymentMethod.id
+            }
           },
-          async (err, paymentIntent) => {
+          async (err, customer) => {
             if (err) res.send({ err: err.raw.message });
             else {
-              await stripe.paymentIntents.confirm(
-                paymentIntent.id,
-                { payment_method: paymentMethod.id },
-                async (err, paymentResponse) => {
+              await stripe.subscriptions.create(
+                {
+                  customer: customer.id,
+                  items: [{ plan: req.body.plan }],
+                  expand: ["latest_invoice.payment_intent"]
+                },
+                async (err, subscription) => {
                   if (err) res.send({ err: err.raw.message });
+                  else if (
+                    subscription.latest_invoice.payment_intent.status !==
+                    "succeeded"
+                  )
+                    res.send({ err: "Card not Accepted" });
                   else {
-                    if (paymentResponse.status !== "succeeded")
-                      res.send({ err: "Payment failed" });
-                    else {
-                      await stripe.customers.create(
-                        {
-                          payment_method: paymentMethod.id,
-                          email: req.body.email,
-                          name: req.body.name,
-                          invoice_settings: {
-                            default_payment_method: paymentMethod.id
-                          }
-                        },
-                        async (err, customer) => {
-                          if (err) res.send({ err: err.raw.message });
-                          else
-                            await User.updateOne(
-                              {
-                                _id: req.body._id
-                              },
-                              {
-                                $set: {
-                                  id: customer.id,
-                                  pmid: paymentMethod.id
-                                  //credits: planCredits(req.body.plan)
-                                }
-                              },
-                              async err => {
-                                if (err)
-                                  res.send({ err: "Couldn't update Database" });
-                                else {
-                                  await stripe.subscriptions.create(
-                                    {
-                                      customer: customer.id,
-                                      items: [{ plan: req.body.plan }],
-                                      expand: ["latest_invoice.payment_intent"]
-                                    },
-                                    async (err, subscription) => {
-                                      if (err)
-                                        res.send({ err: err.raw.message });
-                                      else
-                                        res.send({
-                                          pmid: paymentMethod.id,
-                                          id: customer.id,
-                                          existingPlan: {
-                                            sub_id: subscription.id,
-                                            id: subscription.plan.id,
-                                            name: subscription.plan.nickname
-                                          },
-                                          credits: 0,
-                                          plan: ""
-                                        });
-                                    }
-                                  );
-                                }
-                              }
-                            );
+                    await User.updateOne(
+                      {
+                        _id: req.body._id
+                      },
+                      {
+                        $set: {
+                          id: customer.id,
+                          pmid: paymentMethod.id
+                          //credits: planCredits(req.body.plan)
                         }
-                      );
-                    }
+                      },
+                      async err => {
+                        if (err) res.send({ err: "Couldn't update Database" });
+                        else
+                          res.send({
+                            pmid: paymentMethod.id,
+                            id: customer.id,
+                            existingPlan: {
+                              sub_id: subscription.id,
+                              id: subscription.plan.id,
+                              name: subscription.plan.nickname
+                            },
+                            credits: 0,
+                            plan: ""
+                          });
+                      }
+                    );
                   }
                 }
               );
@@ -281,23 +260,29 @@ router.post(
       let action = req.body;
       switch (action.type) {
         case "invoice.payment_succeeded":
-          const customer = await stripe.customers.retrieve(
-            action.data.object.customer
-          );
-          const activePlan = customer.subscriptions.data[0].items.data[0].plan;
-          const credits = activePlan.nickname === "Plan 1" ? 10 : 20;
-          await User.updateOne(
-            { id: action.data.object.customer },
-            { credits: credits },
-            err => {
-              if (err) {
-                console.warn(err);
-                res.send({ message: "Failed", credits: credits });
-              } else
-                res.send({
-                  message: "Credits Renewed",
-                  credits: credits
-                });
+          await stripe.customers.retrieve(
+            action.data.object.customer,
+            async (err, customer) => {
+              if (err) res.send(err.raw.message);
+              else {
+                const activePlan =
+                  customer.subscriptions.data[0].items.data[0].plan;
+                const credits = activePlan.nickname === "Plan 1" ? 10 : 20;
+                await User.updateOne(
+                  { id: action.data.object.customer },
+                  { credits: credits },
+                  err => {
+                    if (err) {
+                      console.warn(err);
+                      res.send("Couldn't Update Database");
+                    } else
+                      res.send({
+                        message: "Credits Renewed",
+                        credits: credits
+                      });
+                  }
+                );
+              }
             }
           );
 
