@@ -76,7 +76,7 @@ router.post("/user/subscribe", async (req, res) => {
       else {
         await stripe.paymentIntents.create(
           {
-            amount: req.body.charge,
+            amount: "50",
             currency: "inr",
             payment_method_types: ["card"]
           },
