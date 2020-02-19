@@ -86,34 +86,34 @@ router.post("/user/subscribe", async (req, res) => {
           async (err, customer) => {
             if (err) res.send({ err: err.raw.message });
             else {
-              await stripe.subscriptions.create(
+              await User.updateOne(
                 {
-                  customer: customer.id,
-                  items: [{ plan: req.body.plan }],
-                  expand: ["latest_invoice.payment_intent"]
+                  _id: req.body._id
                 },
-                async (err, subscription) => {
-                  if (err) res.send({ err: err.raw.message });
-                  else if (
-                    subscription.latest_invoice.payment_intent.status !==
-                    "succeeded"
-                  )
-                    res.send({ err: "Card not Accepted" });
-                  else {
-                    await User.updateOne(
+                {
+                  $set: {
+                    id: customer.id,
+                    pmid: paymentMethod.id
+                    //credits: planCredits(req.body.plan)
+                  }
+                },
+                async err => {
+                  if (err) res.send({ err: "Couldn't update Database" });
+                  else
+                    await stripe.subscriptions.create(
                       {
-                        _id: req.body._id
+                        customer: customer.id,
+                        items: [{ plan: req.body.plan }],
+                        expand: ["latest_invoice.payment_intent"]
                       },
-                      {
-                        $set: {
-                          id: customer.id,
-                          pmid: paymentMethod.id
-                          //credits: planCredits(req.body.plan)
-                        }
-                      },
-                      async err => {
-                        if (err) res.send({ err: "Couldn't update Database" });
-                        else
+                      async (err, subscription) => {
+                        if (err) res.send({ err: err.raw.message });
+                        else if (
+                          subscription.latest_invoice.payment_intent.status !==
+                          "succeeded"
+                        )
+                          res.send({ err: "Card not Accepted" });
+                        else {
                           res.send({
                             pmid: paymentMethod.id,
                             id: customer.id,
@@ -125,9 +125,9 @@ router.post("/user/subscribe", async (req, res) => {
                             credits: 0,
                             plan: ""
                           });
+                        }
                       }
                     );
-                  }
                 }
               );
             }
