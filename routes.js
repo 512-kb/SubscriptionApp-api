@@ -118,8 +118,7 @@ router.post("/user/subscribe", async (req, res) => {
                               id: subscription.plan.id,
                               name: subscription.plan.nickname
                             },
-                            credits:
-                              subscription.plan.transform_usage.divide_by,
+                            credits: 0,
                             plan: ""
                           });
                       }
@@ -272,6 +271,22 @@ router.post(
                 res.send({
                   message: "Credits Renewed",
                   credits: credits
+                });
+            }
+          );
+
+        case "invoice.payment_failed":
+          await User.updateOne(
+            { id: action.data.object.customer },
+            { credits: 0 },
+            err => {
+              if (err) {
+                console.warn(err);
+                res.send({ message: "Failed", credits: 0 });
+              } else
+                res.send({
+                  message: "Credits Renewed",
+                  credits: 0
                 });
             }
           );
