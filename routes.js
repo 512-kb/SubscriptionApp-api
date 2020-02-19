@@ -145,7 +145,7 @@ router.post("/user/subscribe", async (req, res) => {
                               id: subscription.plan.id,
                               name: subscription.plan.nickname
                             },
-                            credits: 0,
+                            credits: planCredits(subscription.plan.id),
                             plan: ""
                           });
                         }
